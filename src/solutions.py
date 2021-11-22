@@ -17,7 +17,7 @@ def solve_for_two(m: list[list[float]]) -> tuple[float, float]:
         ((m00, m01)
          (m10, m11))
 
-    returns: a, expected_payoff
+    returns: a, expected_payoff_for_other_player
     """
     a = (m[1][1] - m[0][1]) / (m[0][0] - m[1][0] - m[0][1] + m[1][1])
 
@@ -44,7 +44,7 @@ def solve_for_three(m: list[list[float]]) -> tuple[list[float], float]:
          (m20, m21, m22))
 
     returns:
-        (a,b, 1-a-b), expected_payoff
+        (a,b, 1-a-b), expected_payoff_for_other_player
     """
     # pprint(m)
 
