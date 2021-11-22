@@ -1,15 +1,14 @@
 def solve_for_two(m: list[list[float]]) -> float:
-    """ Calculates a solution of two equations for one variables a :
+    """ Calculates a solution of two equations for one variables a:
+
     a*m00 + (1-a)*m01 =
     a*m10 + (1-a)*m11 
 
-    param: 
-        matrix 
+    param: matrix
         ((m00, m01)
          (m10, m11))
 
-    returns:
-        a
+    returns: a
     """
     a = (m[1][1] - m[0][1]) / (m[0][0] - m[1][0] - m[0][1] + m[1][1])
 

@@ -103,16 +103,17 @@ class StrategyMatrix:
         p1rates = dict(zip(list(ST), p1rates))
 
         # Print
-        print(
-            "P2: ", " | ".join([
-                f"{k.name.capitalize()}: {v:.2%}" for k, v in p2rates.items()
-            ]))
-        print(
-            "P1: ", " | ".join([
-                f"{k.name.capitalize()}: {v:.2%}" for k, v in p1rates.items()
-            ]))
+        print("P1:",
+              " | ".join([f"{k.name}: {v:.2%}" for k, v in p1rates.items()]))
+        print("P2:",
+              " | ".join([f"{k.name}: {v:.2%}" for k, v in p2rates.items()]))
 
 
 m = StrategyMatrix(100, 0, allin_coef=0.5)
 print(m)
 m.calculate_mixed_strategy()
+
+# Calculated solution from a page (https://cgi.csc.liv.ac.uk/%7Erahul/bimatrix_solver/)
+# Extreme Equilibrium
+# P1:  (1)  0.078947  0.921053  0.000000  EP=  61.6052631579
+# P2:  (1)  0.868421  0.000000  0.131579  EP=  38.3947368421

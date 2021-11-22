@@ -5,7 +5,10 @@ import solutions
 
 class PayoffMatrix:
     """ Class for payoff matrix that also tracks which columns 
-    and rows are still there from the original matrix"""
+    and rows are still there from the original matrix
+
+    This is for a special case where the other player payoff 
+    matrix is 1-payoff"""
     def __init__(self, m: list[list[float]]):
         self.m = m
         self.rows = [i for i in range(len(m))]
@@ -35,7 +38,7 @@ class PayoffMatrix:
         return len(self.columns)
 
     def check_rows(self):
-        """ Checks if all rows correspond to rational moves """
+        """ Checks if all rows correspond to rationalizable strategies """
         invalid_strats = {i for i in range(self.n_rows)}
 
         for column_index in range(self.n_columns):
@@ -49,7 +52,7 @@ class PayoffMatrix:
             self.remove_row(index)
 
     def check_columns(self):
-        """ Checks if all columns correspond to rational moves
+        """ Checks if all columns correspond to rationalizable strategies
         This assumes payoff for the other player = 1 - payoff """
         invalid_strats = {i for i in range(self.n_columns)}
 
@@ -62,8 +65,8 @@ class PayoffMatrix:
             index = tuple(invalid_strats)[0]
             self.remove_column(index)
 
-    def reduce_to_rational_moves(self):
-        """ Reduces the matrix to only rational moves by checking rows and columns """
+    def reduce_to_rationalizable_strategies(self):
+        """ Reduces the matrix to only rationalizable strategies by checking rows and columns """
         for _ in range(max(self.n_rows, self.n_columns)):
             self.check_rows()
             self.check_columns()
@@ -84,12 +87,13 @@ class PayoffMatrix:
         Payoff for P2 are assumed to be 1 - payoffs.
 
         returns:
-            [[move chances for P2],[move chances for P1]]
+            [[mixing distributions for P2], [mixing distribution for P1]]
 
         """
-        self.reduce_to_rational_moves()
+        self.reduce_to_rationalizable_strategies()
 
-        result: list[list[float]] = [[0] * self.original_ncolumns, [0] * self.original_nrows]
+        result: list[list[float]] = [[0] * self.original_ncolumns,
+                                     [0] * self.original_nrows]
 
         if self.n_columns == 1 and self.n_rows == 1:
             print("Solved with one pure strategy!")
@@ -107,8 +111,8 @@ class PayoffMatrix:
             result[0][self.columns[1]] = 1 - a
 
             a = solutions.solve_for_two(self.second_player_matrix())
-            result[0][self.rows[0]] = a
-            result[0][self.rows[1]] = 1 - a
+            result[1][self.rows[0]] = a
+            result[1][self.rows[1]] = 1 - a
 
         elif self.n_columns == 3 and self.n_rows == 3:
             print("Solved with a mix of three strategies!")
