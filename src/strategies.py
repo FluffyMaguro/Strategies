@@ -13,7 +13,7 @@ import math
 from enum import Enum, auto
 from pprint import pprint
 
-from payoffmatrix import PayoffMatrix
+from payoffmatrix import MixedStrategyResult, PayoffMatrix
 
 
 class ST(Enum):
@@ -64,7 +64,11 @@ class StrategyMatrix:
         # The rest scales fully with skill difference
         skill_difference = p1elo - p2elo
         for strs in self.strats:
-            if strs[0] == ST.allin or strs[1] == ST.allin:
+            if strs[0] == ST.allin and strs[1] == ST.allin:
+                self.strats[strs] = calc_winrate(
+                    skill_difference * (self.allin_coef**2) +
+                    self.strats[strs], 0)
+            elif strs[0] == ST.allin or strs[1] == ST.allin:
                 self.strats[strs] = calc_winrate(
                     skill_difference * self.allin_coef + self.strats[strs], 0)
             else:
@@ -98,18 +102,24 @@ class StrategyMatrix:
                 m[-1].append(self.strats[(p1strat, p2strat)])
 
         matrix = PayoffMatrix(m)
-        p2rates, p1rates = matrix.solve()
-        p2rates = dict(zip(list(ST), p2rates))
-        p1rates = dict(zip(list(ST), p1rates))
+        result = matrix.solve()
+        p1rates = dict(zip(ST, result.p1_dist))
+        p2rates = dict(zip(ST, result.p2_dist))
 
         # Print
-        print("P1:",
-              " | ".join([f"{k.name}: {v:.2%}" for k, v in p1rates.items()]))
-        print("P2:",
-              " | ".join([f"{k.name}: {v:.2%}" for k, v in p2rates.items()]))
+        print(
+            f"P1: (exp-payoff: {result.p1_expected_payoff:.2f}) |",
+            " | ".join([
+                f"{k.name.capitalize()}: {v:.2%}" for k, v in p1rates.items()
+            ]))
+        print(
+            f"P2: (exp-payoff: {result.p2_expected_payoff:.2f}) |",
+            " | ".join([
+                f"{k.name.capitalize()}: {v:.2%}" for k, v in p2rates.items()
+            ]))
 
 
-m = StrategyMatrix(100, 0, allin_coef=0.5)
+m = StrategyMatrix(200, 0, allin_coef=0.5)
 print(m)
 m.calculate_mixed_strategy()
 

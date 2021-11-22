@@ -1,4 +1,13 @@
-def solve_for_two(m: list[list[float]]) -> float:
+"""
+Solutions for 2x2 and 3x3 payoff matrix.
+These are simple and naive solutions. If I wanted this project to scale, 
+I would either be do it smarter with matrix operations or used a library for
+solving mixed-strategy nash equilibria.
+
+"""
+
+
+def solve_for_two(m: list[list[float]]) -> tuple[float, float]:
     """ Calculates a solution of two equations for one variables a:
 
     a*m00 + (1-a)*m01 =
@@ -8,7 +17,7 @@ def solve_for_two(m: list[list[float]]) -> float:
         ((m00, m01)
          (m10, m11))
 
-    returns: a
+    returns: a, expected_payoff
     """
     a = (m[1][1] - m[0][1]) / (m[0][0] - m[1][0] - m[0][1] + m[1][1])
 
@@ -18,10 +27,10 @@ def solve_for_two(m: list[list[float]]) -> float:
     if abs(res1 - res2) > 0.000001:
         print(f"Error: This should be equal!\n{res1} == {res2}")
 
-    return a
+    return a, res1
 
 
-def solve_for_three(m: list[list[float]]) -> tuple[float, float, float]:
+def solve_for_three(m: list[list[float]]) -> tuple[list[float], float]:
     """ Calculates a solution of two equations for two variables a and b:
 
     a*m00 + b*m01 + (1-a-b)*m02 =
@@ -35,7 +44,7 @@ def solve_for_three(m: list[list[float]]) -> tuple[float, float, float]:
          (m20, m21, m22))
 
     returns:
-        (a,b, 1-a-b)
+        (a,b, 1-a-b), expected_payoff
     """
     # pprint(m)
 
@@ -60,4 +69,4 @@ def solve_for_three(m: list[list[float]]) -> tuple[float, float, float]:
     if abs(res1 - res2) > 0.000001 or abs(res2 - res3) > 0.000001:
         print(f"Error: This should be equal!\n{res1} == {res2} == {res3}")
 
-    return (a, b, 1 - a - b)
+    return [a, b, 1 - a - b], res1

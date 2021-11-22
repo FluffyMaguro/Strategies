@@ -1,6 +1,15 @@
+from dataclasses import dataclass, field
 from pprint import pprint
 
 import solutions
+
+
+@dataclass
+class MixedStrategyResult:
+    p1_dist: list[float] = field(default_factory=list)
+    p2_dist: list[float] = field(default_factory=list)
+    p1_expected_payoff: float = -1
+    p2_expected_payoff: float = -1
 
 
 class PayoffMatrix:
@@ -8,7 +17,9 @@ class PayoffMatrix:
     and rows are still there from the original matrix
 
     This is for a special case where the other player payoff 
-    matrix is 1-payoff"""
+    matrix is 1-payoff.
+
+    Manages only up-to 3 strategies."""
     def __init__(self, m: list[list[float]]):
         self.m = m
         self.rows = [i for i in range(len(m))]
@@ -17,17 +28,15 @@ class PayoffMatrix:
         self.original_ncolumns = self.n_columns
 
     def remove_row(self, index):
-        print("Removing row:", index)
+        print("Removing row:   ", index)
         self.rows.pop(index)
         self.m.pop(index)
-        pprint(self.m)
 
     def remove_column(self, index):
         print("Removing column:", index)
         self.columns.pop(index)
         for row in self.m:
             row.pop(index)
-        pprint(self.m)
 
     @property
     def n_rows(self):
@@ -82,43 +91,64 @@ class PayoffMatrix:
 
         return matrix
 
-    def solve(self) -> list[list[float]]:
+    def solve(self) -> MixedStrategyResult:
         """ Solves the payoff matrix for both P1 and P2.
         Payoff for P2 are assumed to be 1 - payoffs.
-
-        returns:
-            [[mixing distributions for P2], [mixing distribution for P1]]
-
         """
+        result = self._solve()
+        # Print matrix if it changed
+        if len(self.m) != self.original_nrows:
+            pprint(self.m)
+
+        return result
+
+    def _solve(self) -> MixedStrategyResult:
         self.reduce_to_rationalizable_strategies()
 
-        result: list[list[float]] = [[0] * self.original_ncolumns,
-                                     [0] * self.original_nrows]
+        result = MixedStrategyResult()
+        result.p1_dist = [0] * self.original_nrows
+        result.p2_dist = [0] * self.original_ncolumns
 
         if self.n_columns == 1 and self.n_rows == 1:
             print("Solved with one pure strategy!")
-            print(
-                f"row={self.rows[0]}, column={self.columns[0]}, value={self.m[0][0]}"
-            )
             # We have saved which columns/rows were left in rational moves
-            result[0][self.columns[0]] = 1
-            result[1][self.rows[0]] = 1
+            result.p1_expected_payoff = self.m[0][0]
+            result.p2_expected_payoff = 1 - self.m[0][0]
+            result.p1_dist[self.rows[0]] = 1
+            result.p2_dist[self.columns[0]] = 1
 
         elif self.n_columns == 2 and self.n_rows == 2:
             print("Solved with a mix of two strategies!")
-            a = solutions.solve_for_two(self.m)
-            result[0][self.columns[0]] = a
-            result[0][self.columns[1]] = 1 - a
+            a, result.p2_expected_payoff = solutions.solve_for_two(self.m)
+            result.p2_dist[self.columns[0]] = a
+            result.p2_dist[self.columns[1]] = 1 - a
 
-            a = solutions.solve_for_two(self.second_player_matrix())
-            result[1][self.rows[0]] = a
-            result[1][self.rows[1]] = 1 - a
+            a, result.p1_expected_payoff = solutions.solve_for_two(
+                self.second_player_matrix())
+            result.p1_dist[self.rows[0]] = a
+            result.p1_dist[self.rows[1]] = 1 - a
 
         elif self.n_columns == 3 and self.n_rows == 3:
-            print("Solved with a mix of three strategies!")
-            p, q, r = solutions.solve_for_three(self.m)
-            a, b, c = solutions.solve_for_three(self.second_player_matrix())
-            result = [[p, q, r], [a, b, c]]
+            print("Solving with a mix of three strategies!")
+            result.p2_dist, result.p2_expected_payoff = solutions.solve_for_three(
+                self.m)
+            result.p1_dist, result.p1_expected_payoff = solutions.solve_for_three(
+                self.second_player_matrix())
+
+            # If there are some negative chances, remove those columns/row and recursively solve
+            if any(i < 0 for i in result.p1_dist + result.p2_dist):
+                if any(i < 0 for i in result.p1_dist):
+                    index = result.p1_dist.index(min(result.p1_dist))
+                    print("Negative index at row:", index)
+                    self.remove_row(index)
+
+                if any(i < 0 for i in result.p2_dist):
+                    index = result.p2_dist.index(min(result.p2_dist))
+                    print("Negative index at column:", index)
+                    self.remove_column(index)
+
+                return self._solve()
+
         else:
             print("Error, this shouldn't happen!")
             pprint(self.m)
