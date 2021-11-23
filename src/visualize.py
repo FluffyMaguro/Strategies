@@ -46,24 +46,20 @@ def plot_strategy_frequency(data):
     zeros = np.zeros(len(x))
     fig, ax = plt.subplots(2, 1, figsize=(7, 8), dpi=200)
 
-    for i, strategy in enumerate(ST):
-        strategy_freq = [data[diff].p1_dist[i] for diff in data]
-        p = ax[0].plot(x, strategy_freq, label=strategy.name.capitalize())
-        ax[0].fill_between(x,
-                           zeros,
-                           strategy_freq,
-                           alpha=0.2,
-                           color=p[0].get_color())
+    frequencies = [[], []]
+    labels = [e.name.capitalize() for e in ST]
+    for i, _ in enumerate(ST):
+        frequencies[0].append([data[diff].p1_dist[i] for diff in data])
+        frequencies[1].append([data[diff].p2_dist[i] for diff in data])
 
-        strategy_freq = [data[diff].p2_dist[i] for diff in data]
-        p = ax[1].plot(x,
-                       strategy_freq,
-                       label=f"P2 {strategy.name.capitalize()}")
-        ax[1].fill_between(x,
-                           zeros,
-                           strategy_freq,
-                           alpha=0.2,
-                           color=p[0].get_color())
+    for i in range(2):
+        ax[i].stackplot(x,
+                        *frequencies[i],
+                        labels=labels,
+                        alpha=0.5,
+                        edgecolor="k",
+                        linewidth=0.5)
+        labels = [f"P2 {l}" for l in labels]
 
     # Plot P1 winrate
     p1winrate = [data[diff].p1_expected_payoff for diff in data]
@@ -78,9 +74,10 @@ def plot_strategy_frequency(data):
             viable_strategies = n
             breakpoints.append(diff)
 
-    for brk in breakpoints:
-        ax[1].plot([brk, brk], [0, 1], 'k--', alpha=0.5, linewidth=0.5)
-        ax[1].text(brk, 0.2, f"{brk}", ha="center", alpha=0.7)
+    for i in range(2):
+        for brk in breakpoints:
+            ax[i].plot([brk, brk], [0, 1], 'k--', alpha=0.5, linewidth=0.5)
+            ax[i].text(brk, 0.2, f"{brk}", ha="center", alpha=0.7)
 
     # Stylize
     ax[0].set_title("Frequency of used strategies")
@@ -91,7 +88,7 @@ def plot_strategy_frequency(data):
         ax[i].set_xlabel("ELO difference")
         ax[i].set_ylabel("Strategy frequency")
         ax[i].grid(alpha=0.2)
-        ax[i].legend()
+        ax[i].legend(loc="upper left")
 
     fig.tight_layout()
     fig.savefig("img/strategy_frequency.png")

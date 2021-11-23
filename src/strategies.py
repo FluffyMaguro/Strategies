@@ -19,8 +19,8 @@ from payoffmatrix import MixedStrategyResult, PayoffMatrix
 class ST(Enum):
     """ Strategies """
     allin = auto()
-    defensive = auto()
     standard = auto()
+    defensive = auto()
 
 
 def calc_winrate(p1elo: float, p2elo: float) -> float:
