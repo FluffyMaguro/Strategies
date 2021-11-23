@@ -63,7 +63,7 @@ def plot_strategy_frequency(data):
 
     # Plot P1 winrate
     p1winrate = [data[diff].p1_expected_payoff for diff in data]
-    ax[0].plot(x, p1winrate, '--', label="winrate", alpha=0.7, linewidth=1)
+    ax[0].plot(x, p1winrate, '-.', label="winrate", alpha=0.7, linewidth=1)
 
     # Find and plot breakpoints where there is a different number of strategies viable
     breakpoints = []
