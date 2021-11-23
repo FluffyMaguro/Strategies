@@ -1,22 +1,23 @@
 import matplotlib.pyplot as plt
-import numpy as np
 import matplotlib.ticker as mtick
+import numpy as np
 
 from payoffmatrix import MixedStrategyResult
 from strategies import ST, StrategyMatrix, calc_winrate
 
 ALLIN_COEF = 0.5
-# Calculate data
-data: dict[int, MixedStrategyResult] = dict()
-for elo_diff in range(-700, 701, 1):
-    matrix = StrategyMatrix(elo_diff, 0, allin_coef=ALLIN_COEF)
-    data[elo_diff] = matrix.calculate_mixed_strategy()
 
-# Plotting
-x = list(data)
+
+def calculate_data() -> dict[int, MixedStrategyResult]:
+    data: dict[int, MixedStrategyResult] = dict()
+    for elo_diff in range(-700, 701, 1):
+        matrix = StrategyMatrix(elo_diff, 0, allin_coef=ALLIN_COEF)
+        data[elo_diff] = matrix.calculate_mixed_strategy()
+    return data
 
 
 def plot_allin_coef_impact(data):
+    x = list(data)
     winrate = [data[diff].p1_expected_payoff for diff in data]
     allins = [calc_winrate(diff * ALLIN_COEF, 0) for diff in data]
     winrate_without_strats = [calc_winrate(diff, 0) for diff in data]
@@ -36,21 +37,20 @@ def plot_allin_coef_impact(data):
     ax.grid(alpha=0.2)
     ax.legend()
     fig.tight_layout()
-    fig.savefig("../img/Reduction.png")
-
-
-plot_allin_coef_impact(data)
+    fig.savefig("img/Reduction.png")
 
 
 # Strategy frequency
 def plot_strategy_frequency(data):
+    x = list(data)
+    zeros = np.zeros(len(x))
     fig, ax = plt.subplots(2, 1, figsize=(7, 8), dpi=200)
 
     for i, strategy in enumerate(ST):
         strategy_freq = [data[diff].p1_dist[i] for diff in data]
         p = ax[0].plot(x, strategy_freq, label=strategy.name.capitalize())
         ax[0].fill_between(x,
-                           np.zeros(len(x)),
+                           zeros,
                            strategy_freq,
                            alpha=0.2,
                            color=p[0].get_color())
@@ -60,7 +60,7 @@ def plot_strategy_frequency(data):
                        strategy_freq,
                        label=f"P2 {strategy.name.capitalize()}")
         ax[1].fill_between(x,
-                           np.zeros(len(x)),
+                           zeros,
                            strategy_freq,
                            alpha=0.2,
                            color=p[0].get_color())
@@ -94,7 +94,10 @@ def plot_strategy_frequency(data):
         ax[i].legend()
 
     fig.tight_layout()
-    fig.savefig("../img/strategy_frequency.png")
+    fig.savefig("img/strategy_frequency.png")
 
 
-plot_strategy_frequency(data)
+if __name__ == "__main__":
+    data = calculate_data()
+    plot_allin_coef_impact(data)
+    plot_strategy_frequency(data)
