@@ -6,11 +6,12 @@ from payoffmatrix import MixedStrategyResult
 from strategies import ST, StrategyMatrix, calc_winrate
 
 ALLIN_COEF = 0.5
+MAX = 700
 
 
 def calculate_data() -> dict[int, MixedStrategyResult]:
     data: dict[int, MixedStrategyResult] = dict()
-    for elo_diff in range(-700, 701, 1):
+    for elo_diff in range(-MAX, MAX + 1, 1):
         matrix = StrategyMatrix(elo_diff, 0, allin_coef=ALLIN_COEF)
         data[elo_diff] = matrix.calculate_mixed_strategy()
     return data

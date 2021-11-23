@@ -11,7 +11,6 @@ Assumptions and simplifications in this model:
 
 import math
 from enum import Enum, auto
-from pprint import pprint
 
 from payoffmatrix import MixedStrategyResult, PayoffMatrix
 
