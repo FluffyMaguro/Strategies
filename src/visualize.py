@@ -1,47 +1,100 @@
 import matplotlib.pyplot as plt
+import numpy as np
+import matplotlib.ticker as mtick
 
 from payoffmatrix import MixedStrategyResult
 from strategies import ST, StrategyMatrix, calc_winrate
 
 ALLIN_COEF = 0.5
-
 # Calculate data
 data: dict[int, MixedStrategyResult] = dict()
-for elo_diff in range(-500, 500, 100):
+for elo_diff in range(-700, 701, 1):
     matrix = StrategyMatrix(elo_diff, 0, allin_coef=ALLIN_COEF)
     data[elo_diff] = matrix.calculate_mixed_strategy()
 
 # Plotting
-plt.rcParams['figure.dpi'] = 150
 x = list(data)
 
-# Expected payoff vs elo winrate using the same strategy
-winrate = [data[diff].p1_expected_payoff for diff in data]
-winrate_without_strats = [calc_winrate(diff, 0) for diff in data]
 
-fig, ax = plt.subplots(1, 1)
-ax.plot(x, winrate, label="winrate")
-ax.plot(x, winrate_without_strats, label="winrate using the same strategy")
-ax.set_xlabel("ELO difference")
-ax.set_ylabel("Winrate")
-ax.set_title(
-    "The difference between winrate and winrate when using the same strategy")
-ax.grid(alpha=0.2)
-ax.legend()
-plt.show()  #use fig here?
+def plot_allin_coef_impact(data):
+    winrate = [data[diff].p1_expected_payoff for diff in data]
+    allins = [calc_winrate(diff * ALLIN_COEF, 0) for diff in data]
+    winrate_without_strats = [calc_winrate(diff, 0) for diff in data]
+
+    fig, ax = plt.subplots(1, 1, dpi=200)
+    ax.plot(x, winrate_without_strats, label="Standard vs standard")
+    ax.plot(x, winrate, label="Mixed strategies")
+    ax.plot(x, allins, label="Allin vs Allin")
+    ax.plot(x, 0.5 * np.ones(len(x)), 'k--', alpha=0.5, linewidth=0.5)
+    ax.plot([0, 0], [0, 1], 'k--', alpha=0.5, linewidth=0.5)
+    ax.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+    ax.set_xlabel("ELO difference")
+    ax.set_ylabel("Winrate")
+    ax.set_title(
+        f"The impact of having certain strategies reflect skill less"
+        f"\nOne allin is set to reduce ELO difference by {1-ALLIN_COEF:.0%}")
+    ax.grid(alpha=0.2)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig("../img/Reduction.png")
+
+
+plot_allin_coef_impact(data)
+
 
 # Strategy frequency
-fig, ax = plt.subplots(2, 1)
-for i, strategy in enumerate(ST):
-    strategy_freq = [data[diff].p1_dist[i] for diff in data]
-    ax[0].plot(x, strategy_freq, label=strategy.name)
+def plot_strategy_frequency(data):
+    fig, ax = plt.subplots(2, 1, figsize=(7, 8), dpi=200)
 
-    strategy_freq = [data[diff].p2_dist[i] for diff in data]
-    ax[1].plot(x, strategy_freq, label=strategy.name)
+    for i, strategy in enumerate(ST):
+        strategy_freq = [data[diff].p1_dist[i] for diff in data]
+        p = ax[0].plot(x, strategy_freq, label=strategy.name.capitalize())
+        ax[0].fill_between(x,
+                           np.zeros(len(x)),
+                           strategy_freq,
+                           alpha=0.2,
+                           color=p[0].get_color())
 
-ax.set_xlabel("ELO difference")
-ax.set_ylabel("Strategy frequency")
-ax.set_title("Frequency of used strategies")
-ax.grid(alpha=0.2)
-ax.legend()
-plt.show()  #use fig here?
+        strategy_freq = [data[diff].p2_dist[i] for diff in data]
+        p = ax[1].plot(x,
+                       strategy_freq,
+                       label=f"P2 {strategy.name.capitalize()}")
+        ax[1].fill_between(x,
+                           np.zeros(len(x)),
+                           strategy_freq,
+                           alpha=0.2,
+                           color=p[0].get_color())
+
+    # Plot P1 winrate
+    p1winrate = [data[diff].p1_expected_payoff for diff in data]
+    ax[0].plot(x, p1winrate, '--', label="winrate", alpha=0.7, linewidth=1)
+
+    # Find and plot breakpoints where there is a different number of strategies viable
+    breakpoints = []
+    viable_strategies = 1
+    for diff in data:
+        n = len([i for i in data[diff].p1_dist if i != 0])
+        if n != viable_strategies:
+            viable_strategies = n
+            breakpoints.append(diff)
+
+    for brk in breakpoints:
+        ax[1].plot([brk, brk], [0, 1], 'k--', alpha=0.5, linewidth=0.5)
+        ax[1].text(brk, 0.2, f"{brk}", ha="center", alpha=0.7)
+
+    # Stylize
+    ax[0].set_title("Frequency of used strategies")
+    for i in range(2):
+        ax[i].plot(x, 0.5 * np.ones(len(x)), 'k--', alpha=0.5, linewidth=0.5)
+        ax[i].plot([0, 0], [0, 1], 'k--', alpha=0.5, linewidth=0.5)
+        ax[i].yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+        ax[i].set_xlabel("ELO difference")
+        ax[i].set_ylabel("Strategy frequency")
+        ax[i].grid(alpha=0.2)
+        ax[i].legend()
+
+    fig.tight_layout()
+    fig.savefig("../img/strategy_frequency.png")
+
+
+plot_strategy_frequency(data)

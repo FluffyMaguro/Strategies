@@ -102,7 +102,7 @@ class PayoffMatrix:
         result.p2_dist = [0] * self.original_ncolumns
 
         if self.n_columns == 1 and self.n_rows == 1:
-            print("Solved with one pure strategy!")
+            # print("Solved with one pure strategy!")
             # We have saved which columns/rows were left in rational moves
             result.p1_expected_payoff = self.m[0][0]
             result.p2_expected_payoff = 1 - self.m[0][0]
@@ -110,7 +110,7 @@ class PayoffMatrix:
             result.p2_dist[self.columns[0]] = 1
 
         elif self.n_columns == 2 and self.n_rows == 2:
-            print("Solved with a mix of two strategies!")
+            # print("Solved with a mix of two strategies!")
             a, result.p1_expected_payoff = solutions.solve_for_two(self.m)
             result.p2_dist[self.columns[0]] = a
             result.p2_dist[self.columns[1]] = 1 - a
@@ -121,7 +121,7 @@ class PayoffMatrix:
             result.p1_dist[self.rows[1]] = 1 - a
 
         elif self.n_columns == 3 and self.n_rows == 3:
-            print("Solving with a mix of three strategies!")
+            # print("Solving with a mix of three strategies!")
             result.p2_dist, result.p1_expected_payoff = solutions.solve_for_three(
                 self.m)
             result.p1_dist, result.p2_expected_payoff = solutions.solve_for_three(
@@ -131,18 +131,18 @@ class PayoffMatrix:
             if any(i < 0 for i in result.p1_dist + result.p2_dist):
                 if any(i < 0 for i in result.p1_dist):
                     index = result.p1_dist.index(min(result.p1_dist))
-                    print("Negative index at row:", index)
+                    # print("Negative index at row:", index)
                     self.remove_row(index)
 
                 if any(i < 0 for i in result.p2_dist):
                     index = result.p2_dist.index(min(result.p2_dist))
-                    print("Negative index at column:", index)
+                    # print("Negative index at column:", index)
                     self.remove_column(index)
 
                 return self.solve()
 
         else:
-            print("Error, this shouldn't happen!")
+            print("ERROR: Incorrect payoff matrix shape!")
             pprint(self.m)
 
         return result
