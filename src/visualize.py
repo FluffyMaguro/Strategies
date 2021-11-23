@@ -20,13 +20,15 @@ def calculate_data() -> dict[int, MixedStrategyResult]:
 def plot_allin_coef_impact(data):
     x = list(data)
     winrate = [data[diff].p1_expected_payoff for diff in data]
-    allins = [calc_winrate(diff * ALLIN_COEF, 0) for diff in data]
+    allins = [calc_winrate(diff * (ALLIN_COEF**2), 0) for diff in data]
+    one_allins = [calc_winrate(diff * ALLIN_COEF, 0) for diff in data]
     winrate_without_strats = [calc_winrate(diff, 0) for diff in data]
 
     fig, ax = plt.subplots(1, 1, dpi=200)
     ax.plot(x, winrate_without_strats, label="Standard vs standard")
     ax.plot(x, winrate, label="Mixed strategies")
-    ax.plot(x, allins, label="Allin vs Allin")
+    ax.plot(x, one_allins, label=f"Allin vs non-allin (-{1-ALLIN_COEF:.0%})")
+    ax.plot(x, allins, label=f"Allin vs allin (-{1-ALLIN_COEF**2:.0%})")
     ax.plot(x, 0.5 * np.ones(len(x)), 'k--', alpha=0.5, linewidth=0.5)
     ax.plot([0, 0], [0, 1], 'k--', alpha=0.5, linewidth=0.5)
     ax.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
@@ -38,7 +40,7 @@ def plot_allin_coef_impact(data):
     ax.grid(alpha=0.2)
     ax.legend()
     fig.tight_layout()
-    fig.savefig("img/Reduction.png")
+    fig.savefig("img/reduction.png")
 
 
 # Strategy frequency
@@ -68,10 +70,12 @@ def plot_strategy_frequency(data):
 
     # Find and plot breakpoints where there is a different number of strategies viable
     breakpoints = []
-    viable_strategies = 1
+    viable_strategies = -1
     for diff in data:
         n = len([i for i in data[diff].p1_dist if i != 0])
-        if n != viable_strategies:
+        if viable_strategies == -1:
+            viable_strategies = n
+        elif n != viable_strategies:
             viable_strategies = n
             breakpoints.append(diff)
 

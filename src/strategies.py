@@ -74,15 +74,15 @@ class StrategyMatrix:
                 self.strats[strs] = calc_winrate(
                     skill_difference + self.strats[strs], 0)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """ Produces an output like this:
-        [P1↓ P2→]        Allin  Defensive   Standard
-        Allin              50%        35%        55%
-        Defensive          65%        50%        40%
-        Standard           45%        60%        50%
+        [P1↓ P2→]        Allin   Standard  Defensive
+        Allin              50%        55%        35%
+        Standard           45%        50%        60%
+        Defensive          65%        40%        50%
         """
         s = [
-            f"""{'[P1↓ P2→]':11}{'Allin':>11}{'Defensive':>11}{'Standard':>11}\n"""
+            f"""{'[P1↓ P2→]':11}{'Allin':>11}{'Standard':>11}{'Defensive':>11}\n"""
         ]
         for p1strat in ST:
             s.append(f"{p1strat.name.capitalize():11}")
@@ -105,7 +105,7 @@ class StrategyMatrix:
                 f"{k.name.capitalize()}: {v:.2%}" for k, v in p2rates.items()
             ]))
 
-    def calculate_mixed_strategy(self):
+    def calculate_mixed_strategy(self) -> MixedStrategyResult:
         """ """
         # Create the payoff matrix
         m = []
