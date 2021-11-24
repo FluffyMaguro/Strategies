@@ -10,7 +10,7 @@ MAX = 700
 
 
 def calculate_data() -> dict[int, MixedStrategyResult]:
-    data: dict[int, MixedStrategyResult] = dict()
+    data = dict()
     for elo_diff in range(-MAX, MAX + 1, 1):
         matrix = StrategyMatrix(elo_diff, 0, allin_coef=ALLIN_COEF)
         data[elo_diff] = matrix.calculate_mixed_strategy()
