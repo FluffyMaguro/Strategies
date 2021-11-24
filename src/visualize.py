@@ -27,8 +27,8 @@ def plot_allin_coef_impact(data):
     fig, ax = plt.subplots(1, 1, dpi=200)
     ax.plot(x, winrate_without_strats, label="Standard vs standard")
     ax.plot(x, winrate, label="Mixed strategies")
-    ax.plot(x, one_allins, label=f"Allin vs non-allin (-{1-ALLIN_COEF:.0%})")
-    ax.plot(x, allins, label=f"Allin vs allin (-{1-ALLIN_COEF**2:.0%})")
+    ax.plot(x, one_allins, label=f"All-in vs not all-in (-{1-ALLIN_COEF:.0%})")
+    ax.plot(x, allins, label=f"All-in vs all-in (-{1-ALLIN_COEF**2:.0%})")
     ax.plot(x, 0.5 * np.ones(len(x)), 'k--', alpha=0.5, linewidth=0.5)
     ax.plot([0, 0], [0, 1], 'k--', alpha=0.5, linewidth=0.5)
     ax.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
@@ -36,7 +36,7 @@ def plot_allin_coef_impact(data):
     ax.set_ylabel("Winrate")
     ax.set_title(
         f"The impact of having certain strategies reflect skill less"
-        f"\nOne allin is set to reduce ELO difference by {1-ALLIN_COEF:.0%}")
+        f"\nOne all-in is set to reduce ELO difference by {1-ALLIN_COEF:.0%}")
     ax.grid(alpha=0.2)
     ax.legend()
     fig.tight_layout()
@@ -50,7 +50,7 @@ def plot_strategy_frequency(data):
     fig, ax = plt.subplots(2, 1, figsize=(7, 8), dpi=200)
 
     frequencies = [[], []]
-    labels = [e.name.capitalize() for e in ST]
+    labels = [e.name.capitalize().replace("Allin", "All-in") for e in ST]
     for i, _ in enumerate(ST):
         frequencies[0].append([data[diff].p1_dist[i] for diff in data])
         frequencies[1].append([data[diff].p2_dist[i] for diff in data])
@@ -62,7 +62,7 @@ def plot_strategy_frequency(data):
                         alpha=0.5,
                         edgecolor="k",
                         linewidth=0.5)
-        labels = [f"P2 {l}" for l in labels]
+        labels = [f"P2 {l}".replace("Allin", "All-in") for l in labels]
 
     # Plot P1 winrate
     p1winrate = [data[diff].p1_expected_payoff for diff in data]
